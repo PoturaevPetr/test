@@ -18,8 +18,8 @@
           </thead>
           <tbody>
             <tr v-if="onInputs">
-              <td><input type="text" name="firstname" class="form-control is-valid" placeholder="Имя" v-model="firstName" required></td>
-              <td><input type="text" name="seconName" class="form-control is-valid" placeholder="Отчество" v-model="secondName" required></td>
+              <td><input type="text" name="firstname" class="form-control" placeholder="Имя" v-model="firstName" required></td>
+              <td><input type="text" name="seconName" class="form-control" placeholder="Отчество" v-model="secondName" required></td>
               <td>
                 <button type="submit" class="btn btn-warning btn-sm" @click="saveData">Сохранить</button>
               </td>
