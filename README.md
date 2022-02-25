@@ -1,3 +1,3 @@
 # test
-# В back-end добавил cors
-# Разворчачивал client на localhost:8080
+В back-end добавил cors
+Разворчачивал cliednt на '''json{localhost:8080}'''
