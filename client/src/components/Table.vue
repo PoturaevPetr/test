@@ -4,20 +4,22 @@
       <div class="col">
         <h4>Таблица</h4>
         <hr>
-        <alert :message="msg" v-if="showAlert"></alert>
+        <div class="alert">
+          <alert class="text-center" :message="MSG" v-if="showAlert"></alert>
+        </div>
         <br><br>
         <button type="button" class="btn btn-success btn-sm" @click="onAdd">Добавить</button>
         <br><br>
         <table class="table table-hover">
           <thead>
             <tr>
-              <th scope="col">Имя</th>
-              <th scope="col">Отчество</th>
+              <th scope="col-4">Имя</th>
+              <th scope="col-4">Отчество</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="onInputs">
+            <tr v-if="activeInp">
               <td><input type="text" name="firstname" class="form-control" placeholder="Имя" v-model="FORM.firstName" required></td>
               <td><input type="text" name="seconName" class="form-control" placeholder="Отчество" v-model="FORM.secondName" required></td>
               <td>
@@ -25,14 +27,12 @@
               </td>
             </tr>           
             <tr v-for="(name, ind) in NAMES" :key="ind">
-              <td v-if="flag[ind]"><input name="textfield" type="text" class="form-control" placeholder="Имя" v-model="name.firstName" required></td>
-              <td v-else>{{name.firstName}}</td>
-              <td v-if="flag[ind]"><input name="textfield" type="text" class="form-control" placeholder="Отчество" v-model="name.secondName" required></td>
-              <td v-else>{{name.secondName}}</td>
-              <td>
-                <button type="button" class="btn btn-warning btn-sm" v-if="flag[ind]" @click="put(ind)">Сохранить</button>
+              <td><input name="textfield" type="text" class="form-control" placeholder="Имя" v-model="name.firstName" v-bind:readonly="activeEdit[ind] != true"></td>
+              <td><input name="textfield" type="text" class="form-control" placeholder="Отчество" v-model="name.secondName" v-bind:readonly="activeEdit[ind] != true"></td>
+              <td class="col-4">
+                <button type="button" class="btn btn-warning btn-sm" v-if="activeEdit[ind]" @click="put(ind)">Сохранить</button>
                 <button type="button" class="btn btn-warning btn-sm" v-else  @click="editData(ind)">Редактировать</button>
-                <button type="button" class="btn btn-danger btn-sm" @click="$store.state.uuid=name.uuid; DELETE_NAME()">Удалить</button>
+                <button type="button" class="btn btn-danger btn-sm" @click="deleteName(name.uuid)">Удалить</button>
               </td>
             </tr>
           </tbody>
@@ -45,15 +45,15 @@
 <script>
 import {mapActions, mapGetters} from "vuex";
 import Alert from './alert.vue';
-import axios from "axios";
+
 export default {
   components: {
     alert: Alert
   },
   data() {
     return {
-      onInputs: false,
-      flag: [],
+      activeInp: false,
+      activeEdit: [],
       msg: "",
       showAlert: false,
     }
@@ -66,43 +66,42 @@ export default {
       "DELETE_NAME",
     ]),
     onAdd() {
-      this.onInputs = true;
+      this.activeInp = true;
     },
     editData(ind) {
-      this.flag[ind] = true;
-      this.FORM = this.NAMES[ind];
+      this.activeEdit[ind] = true;
+
     },
     saveData() {
       if (this.FORM.firstName == "" || this.FORM.secondName == "") {
         this.showAlert = true;
-        this.msg = "Заполните все поля!";
+        this.$store.state.msg = "Заполните все поля!";
       } else {
         this.POST_NAME_FROM_API();
-        this.firstName = "";
-        this.secondName = "";
-        this.onInputs = false;
+        this.activeInp = false;
         this.showAlert = true;
-        this.msg = "Элемент успешно добавлен!"
       }
     },
     put(ind) {
-      const path = "http://localhost:3123/" + this.NAMES[ind].uuid;
-      const putData = {
-        firstName: this.NAMES[ind].firstName,
-        secondName: this.NAMES[ind].secondName,
+      this.$store.state.uuid = this.NAMES[ind].uuid;
+      this.FORM.firstName = this.NAMES[ind].firstName;
+      this.FORM.secondName = this.NAMES[ind].secondName;
+      if (this.FORM.firstName == "" || this.FORM.secondName == "") {
+        this.$store.state.msg = "Заполните все поля!";
+        this.showAlert = true;
+      } else {
+        this.PUT_NAME();
+        this.showAlert = true;  
+        this.msg = this.$store.state.msg;
+        this.activeEdit[ind] = false;
       }
-      axios.put(path, putData)
-        .then(() => {
-          this.flag[ind] = false;
-          this.showAlert = true;
-          this.msg = "Элемент успешно изменен!"
-        })
-        .catch((error) => {
-          this.flag[ind] = false;
-          this.showAlert = true;
-          this.msg = error.response.data
-        })
+      
     },
+    deleteName(uuid) {
+      this.$store.state.uuid = uuid; 
+      this.DELETE_NAME();
+      this.showAlert = true;
+    }
   },
   mounted() {
     this.GET_NAMES_FROM_API();
@@ -110,8 +109,16 @@ export default {
   computed: {
     ...mapGetters([
       "NAMES",
-      "FORM"
+      "FORM",
+      "MSG"
     ])
   },
 }
 </script>
+
+<style scoped>
+
+.alert {
+  height: 6vh;
+}
+</style>
