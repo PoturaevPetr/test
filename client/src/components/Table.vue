@@ -7,7 +7,6 @@
         <div class="alert">
           <alert class="text-center" :message="MSG" v-if="showAlert"></alert>
         </div>
-        <br><br>
         <button type="button" class="btn btn-success btn-sm" @click="onAdd">Добавить</button>
         <br><br>
         <table class="table table-hover">
